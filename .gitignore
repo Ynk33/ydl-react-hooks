@@ -1,0 +1,5 @@
+# git
+.git/
+
+# NPM dependencies
+node_modules/

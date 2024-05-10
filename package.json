@@ -1,0 +1,21 @@
+{
+  "name": "ydl-react-hooks",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.77",
+    "typescript": "^5.4.5"
+  },
+  "peerDependencies": {
+    "next": ">=14.0.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  }
+}
