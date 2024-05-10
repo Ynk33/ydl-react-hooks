@@ -46,11 +46,18 @@ export default function useScrollingNavigation(
       
       const container = getScrollContainer();
       const element = document.getElementById(targetElement);
+      
+      const containerBoundaries = [0, 0];
+      if (typeof container === typeof HTMLElement) {
+        const containerAsHTMLElement = container as HTMLElement;
+        containerBoundaries[0] = containerAsHTMLElement.getBoundingClientRect().left;
+        containerBoundaries[1] = containerAsHTMLElement.getBoundingClientRect().top;
+      }
 
       if (container && element) {
         let [scrollToX, scrollToY] = getScroll(container);
-        scrollToX += element.getBoundingClientRect().left - margin;
-        scrollToY += element.getBoundingClientRect().top - margin;
+        scrollToX += containerBoundaries[0] + element.getBoundingClientRect().left - margin;
+        scrollToY += containerBoundaries[1] + element.getBoundingClientRect().top - margin;
 
         container.scrollTo({
           left: direction === ScrollDirection.x ? scrollToX : 0,
