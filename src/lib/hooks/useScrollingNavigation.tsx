@@ -33,6 +33,7 @@ export default function useScrollingNavigation(
   // Window's dimensions, it is useful for determining which element is currently scrolled on
   const windowDimensions = useWindowDimensions();
 
+
   // Update targetElement with the activeElementId given as a property
   useEffect(() => {
     setTargetElement(activeElementId);
@@ -46,18 +47,11 @@ export default function useScrollingNavigation(
       
       const container = getScrollContainer();
       const element = document.getElementById(targetElement);
-      
-      const containerBoundaries = [0, 0];
-      if (typeof container === typeof HTMLElement) {
-        const containerAsHTMLElement = container as HTMLElement;
-        containerBoundaries[0] = containerAsHTMLElement.getBoundingClientRect().left;
-        containerBoundaries[1] = containerAsHTMLElement.getBoundingClientRect().top;
-      }
 
       if (container && element) {
-        let [scrollToX, scrollToY] = getScroll(container);
-        scrollToX += containerBoundaries[0] + element.getBoundingClientRect().left - margin;
-        scrollToY += containerBoundaries[1] + element.getBoundingClientRect().top - margin;
+        let [scrollToX, scrollToY, containerLeft, containerTop] = getScroll(container);
+        scrollToX += element.getBoundingClientRect().left - containerLeft - margin;
+        scrollToY += element.getBoundingClientRect().top - containerTop - margin;
 
         container.scrollTo({
           left: direction === ScrollDirection.x ? scrollToX : 0,
@@ -119,14 +113,14 @@ export function getScroll(element: Window | HTMLElement): number[] {
   const elementAsHTMLElement = element as HTMLElement;
 
   if (elementAsWindow.scrollX !== undefined) {
-    return [elementAsWindow.scrollX, elementAsWindow.scrollY];
+    return [elementAsWindow.scrollX, elementAsWindow.scrollY, 0, 0];
   } else if (elementAsHTMLElement.scrollLeft !== undefined) {
-    return [elementAsHTMLElement.scrollLeft, elementAsHTMLElement.scrollTop];
+    return [elementAsHTMLElement.scrollLeft, elementAsHTMLElement.scrollTop, elementAsHTMLElement.getBoundingClientRect().left, elementAsHTMLElement.getBoundingClientRect().top];
   } else {
     console.error(
       "The element is neither of type Window or HTMLElement",
       element
     );
-    return [0, 0];
+    return [0, 0, 0, 0];
   }
 }
