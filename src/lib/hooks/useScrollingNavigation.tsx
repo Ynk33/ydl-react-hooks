@@ -10,6 +10,24 @@ export enum ScrollDirection {
 }
 
 /**
+ * Scroll behaviors.
+ */
+export enum ScrollBehavior {
+  instant = "instant",
+  smooth = "smooth",
+  auto = "auto",
+}
+
+interface UseScrollNavigationProps {
+  getScrollContainer: () => HTMLElement | Window | null;
+  elementsIds: string[];
+  activeElementId?: string;
+  direction?: ScrollDirection;
+  margin?: number;
+  scrollBehavior?: ScrollBehavior;
+}
+
+/**
  * Custom hook to implement a scrolling navigation in a HTML element.
  * @param getScrollContainer Function to retrieve the scroll container.
  * @param elementsIds List of IDs to retrieve the elements to navigate between.
@@ -18,13 +36,14 @@ export enum ScrollDirection {
  * @param margin Margin to apply when scrolling to the active element.
  * @returns The currently active element.
  */
-export default function useScrollingNavigation(
-  getScrollContainer: () => HTMLElement | Window | null,
-  elementsIds: string[],
-  activeElementId: string = "",
-  direction: ScrollDirection = ScrollDirection.y,
-  margin: number = 0
-): string {
+export default function useScrollingNavigation({
+  getScrollContainer,
+  elementsIds,
+  activeElementId = "",
+  direction = ScrollDirection.y,
+  margin = 0,
+  scrollBehavior = ScrollBehavior.instant,
+}: UseScrollNavigationProps): string {
   // State storing the active element, i.e. the element currently scrolled on
   const [activeElement, setActiveElement] = useState(activeElementId);
   // State storing the element to scroll to
@@ -32,7 +51,6 @@ export default function useScrollingNavigation(
 
   // Window's dimensions, it is useful for determining which element is currently scrolled on
   const windowDimensions = useWindowDimensions();
-
 
   // Update targetElement with the activeElementId given as a property
   useEffect(() => {
@@ -44,19 +62,22 @@ export default function useScrollingNavigation(
     // Scroll to the target element
     const scroll = () => {
       if (targetElement === "") return;
-      
+
       const container = getScrollContainer();
       const element = document.getElementById(targetElement);
 
       if (container && element) {
-        let [scrollToX, scrollToY, containerLeft, containerTop] = getScroll(container);
-        scrollToX += element.getBoundingClientRect().left - containerLeft - margin;
-        scrollToY += element.getBoundingClientRect().top - containerTop - margin;
+        let [scrollToX, scrollToY, containerLeft, containerTop] =
+          getScroll(container);
+        scrollToX +=
+          element.getBoundingClientRect().left - containerLeft - margin;
+        scrollToY +=
+          element.getBoundingClientRect().top - containerTop - margin;
 
         container.scrollTo({
           left: direction === ScrollDirection.x ? scrollToX : 0,
           top: direction === ScrollDirection.y ? scrollToY : 0,
-          behavior: "smooth",
+          behavior: scrollBehavior,
         });
       }
     };
@@ -77,7 +98,7 @@ export default function useScrollingNavigation(
         const section = document.getElementById(elementId);
         if (section) {
           const rect = section.getBoundingClientRect();
-  
+
           if (direction === ScrollDirection.x) {
             if (
               rect.left <= windowDimensions.width * 0.1 &&
@@ -115,7 +136,12 @@ export function getScroll(element: Window | HTMLElement): number[] {
   if (elementAsWindow.scrollX !== undefined) {
     return [elementAsWindow.scrollX, elementAsWindow.scrollY, 0, 0];
   } else if (elementAsHTMLElement.scrollLeft !== undefined) {
-    return [elementAsHTMLElement.scrollLeft, elementAsHTMLElement.scrollTop, elementAsHTMLElement.getBoundingClientRect().left, elementAsHTMLElement.getBoundingClientRect().top];
+    return [
+      elementAsHTMLElement.scrollLeft,
+      elementAsHTMLElement.scrollTop,
+      elementAsHTMLElement.getBoundingClientRect().left,
+      elementAsHTMLElement.getBoundingClientRect().top,
+    ];
   } else {
     console.error(
       "The element is neither of type Window or HTMLElement",
